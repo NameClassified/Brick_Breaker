@@ -13,15 +13,24 @@ class ViewController: UIViewController, UICollisionBehaviorDelegate {
     var dynamicAnimator = UIDynamicAnimator()
     var collisionBehavior = UICollisionBehavior()
     
+    
     @IBOutlet weak var livesLabel: UILabel!
     
     var paddle = UIView()
     var ball = UIView()
     var brick = UIView()
-    var lives = 3
+    var brickCount = 48
+    
+    
+    var lives = 5
+    var allObjects : [UIView] = []
+    
+    var bricks : [UIView] = []
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         
         //adds ball
         ball = UIView(frame: CGRectMake(view.center.x - 10, view.center.y, 20, 20))
@@ -37,10 +46,27 @@ class ViewController: UIViewController, UICollisionBehaviorDelegate {
         
         dynamicAnimator = UIDynamicAnimator(referenceView: view)
         
-        //adds blue brick
-        brick = UIView(frame: CGRectMake(20, 20, 40, 20))
-        brick.backgroundColor = UIColor.blueColor()
-        view.addSubview(brick)
+        allObjects.append(paddle)
+        allObjects.append(ball)
+        
+        print("test1")
+        
+        let width = Int(view.bounds.width)
+        let numberofBricks = (width / 40)
+        let xOffset = Int(Int(width % 40)/2)
+        for var x = 0; x <= numberofBricks; x++  {
+            addBrick(((40*x)+(x*xOffset)), y: 20, color: UIColor.blueColor())
+            addBrick(((40*x)+(x*xOffset)), y: 45, color: UIColor.blueColor())
+            addBrick(((40*x)+(x*xOffset)), y: 70, color: UIColor.orangeColor())
+            addBrick(((40*x)+(x*xOffset)), y: 95, color: UIColor.orangeColor())
+            addBrick(((40*x)+(x*xOffset)), y: 120, color: UIColor.greenColor())
+            addBrick(((40*x)+(x*xOffset)), y: 145, color: UIColor.greenColor())
+            
+        }
+        
+        
+        print("test2")
+        print("\(allObjects.count)")
         
         //adds dynamic behavior for ball
         let ballDynamicBehavior = UIDynamicItemBehavior(items: [ball])
@@ -57,12 +83,14 @@ class ViewController: UIViewController, UICollisionBehaviorDelegate {
         paddleDynamicBehavior.allowsRotation = false
         dynamicAnimator.addBehavior(paddleDynamicBehavior)
         
+        
         //adds dynamic behavior for brick
-        let brickDynamicBehavior = UIDynamicItemBehavior(items: [brick])
+        let brickDynamicBehavior = UIDynamicItemBehavior(items: bricks)
         brickDynamicBehavior.density = 10000
         brickDynamicBehavior.resistance = 100
         brickDynamicBehavior.allowsRotation = false
         dynamicAnimator.addBehavior(brickDynamicBehavior)
+        
         
         
         //creates push for ball
@@ -71,14 +99,21 @@ class ViewController: UIViewController, UICollisionBehaviorDelegate {
         pushBehavior.magnitude = 0.25
         dynamicAnimator.addBehavior(pushBehavior)
         
+        print("test5")
+        
         //creates collision mechanics
-        collisionBehavior = UICollisionBehavior(items: [ball, paddle, brick])
+        
+        collisionBehavior = UICollisionBehavior(items: allObjects)
+        print("test6")
         collisionBehavior.translatesReferenceBoundsIntoBoundary = true
         collisionBehavior.collisionMode = .Everything
         collisionBehavior.collisionDelegate = self
+        print("test7")
         dynamicAnimator.addBehavior(collisionBehavior)
+        print("test8")
         
         livesLabel.text = "Lives: \(lives)"
+        
         
     }
     
@@ -107,20 +142,37 @@ class ViewController: UIViewController, UICollisionBehaviorDelegate {
     
     //collision behavior delegate for bricks
     func collisionBehavior(behavior: UICollisionBehavior, beganContactForItem item1: UIDynamicItem, withItem item2: UIDynamicItem, atPoint p: CGPoint) {
-        if (item1.isEqual(ball) && item2.isEqual(brick)) || (item2.isEqual(ball) && item1.isEqual(brick)) {
-            if brick.backgroundColor == UIColor.blueColor() {
-                brick.backgroundColor = UIColor.yellowColor()
-            }
-            else {
-                brick.hidden = true
-                collisionBehavior.removeItem(brick)
-                livesLabel.text = "You win, +25 MMR"
-                ball.removeFromSuperview()
-                collisionBehavior.removeItem(ball)
-                dynamicAnimator.updateItemUsingCurrentState(ball)
+        for index in bricks {
+            if (item1.isEqual(allObjects[1]) && item2.isEqual(index)) || (item2.isEqual(allObjects[1]) && item1.isEqual(index)) {
+                if index.backgroundColor == UIColor.blueColor() {
+                    index.backgroundColor = UIColor.orangeColor()
+                }
+                else if index.backgroundColor == UIColor.orangeColor() {
+                    index.backgroundColor = UIColor.greenColor()
+                }
+                else {
+                    index.hidden = true
+                    collisionBehavior.removeItem(index)
+                    brickCount--
+                    if brickCount == 0 {
+                   
+                    livesLabel.text = "You win, +25 MMR"
+                    ball.removeFromSuperview()
+                    collisionBehavior.removeItem(ball)
+                    dynamicAnimator.updateItemUsingCurrentState(ball)
+                    }
+                }
             }
         }
         
+    }
+    
+    func addBrick(x: Int, y: Int, color: UIColor) {
+        brick = UIView(frame: CGRectMake(CGFloat(x), CGFloat(y), 40, 20))
+        brick.backgroundColor = color
+        bricks.append(brick)
+        allObjects.append(brick)
+        view.addSubview(brick)
     }
     
     
