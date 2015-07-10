@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Darwin
 
 class ViewController: UIViewController, UICollisionBehaviorDelegate {
     
@@ -20,6 +21,7 @@ class ViewController: UIViewController, UICollisionBehaviorDelegate {
     var ball = UIView()
     var brick = UIView()
     var brickCount = 48
+    var gameState = ""
     
     
     var lives = 5
@@ -56,7 +58,7 @@ class ViewController: UIViewController, UICollisionBehaviorDelegate {
         let xOffset = Int(Int(width % 40)/2)
         for var x = 0; x <= numberofBricks; x++  {
             addBrick(((40*x)+(x*xOffset)), y: 20, color: UIColor.blueColor())
-            addBrick(((40*x)+(x*xOffset)), y: 45, color: UIColor.blueColor())
+            addBrick(((40*x)+(x*xOffset)), y: 45, color: UIColor.orangeColor())
             addBrick(((40*x)+(x*xOffset)), y: 70, color: UIColor.orangeColor())
             addBrick(((40*x)+(x*xOffset)), y: 95, color: UIColor.orangeColor())
             addBrick(((40*x)+(x*xOffset)), y: 120, color: UIColor.greenColor())
@@ -130,6 +132,7 @@ class ViewController: UIViewController, UICollisionBehaviorDelegate {
             if lives > 0 {
                 livesLabel.text = "Lives: \(lives)"
                 ball.center = view.center
+                //insert stop/push ball here
                 dynamicAnimator.updateItemUsingCurrentState(ball)
             }
             else {
@@ -143,23 +146,32 @@ class ViewController: UIViewController, UICollisionBehaviorDelegate {
     //collision behavior delegate for bricks
     func collisionBehavior(behavior: UICollisionBehavior, beganContactForItem item1: UIDynamicItem, withItem item2: UIDynamicItem, atPoint p: CGPoint) {
         for index in bricks {
-            if (item1.isEqual(allObjects[1]) && item2.isEqual(index)) || (item2.isEqual(allObjects[1]) && item1.isEqual(index)) {
-                if index.backgroundColor == UIColor.blueColor() {
-                    index.backgroundColor = UIColor.orangeColor()
-                }
-                else if index.backgroundColor == UIColor.orangeColor() {
-                    index.backgroundColor = UIColor.greenColor()
-                }
-                else {
-                    index.hidden = true
-                    collisionBehavior.removeItem(index)
-                    brickCount--
-                    if brickCount == 0 {
-                   
-                    livesLabel.text = "You win, +25 MMR"
-                    ball.removeFromSuperview()
-                    collisionBehavior.removeItem(ball)
-                    dynamicAnimator.updateItemUsingCurrentState(ball)
+            if brickCount == 0 {
+                gameState = "Win"
+                gameEnd()
+                ball.removeFromSuperview()
+                collisionBehavior.removeItem(ball)
+                dynamicAnimator.updateItemUsingCurrentState(ball)
+            }
+            else {
+                if (item1.isEqual(allObjects[1]) && item2.isEqual(index)) || (item2.isEqual(allObjects[1]) && item1.isEqual(index)) {
+                    if index.backgroundColor == UIColor.blueColor() {
+                        index.backgroundColor = UIColor.orangeColor()
+                    }
+                    else if index.backgroundColor == UIColor.orangeColor() {
+                        index.backgroundColor = UIColor.greenColor()
+                    }
+                    else {
+                        index.hidden = true
+                        collisionBehavior.removeItem(index)
+                        brickCount--
+                        if brickCount == 0 {
+                            gameState = "Win"
+                            gameEnd()
+                            ball.removeFromSuperview()
+                            collisionBehavior.removeItem(ball)
+                            dynamicAnimator.updateItemUsingCurrentState(ball)
+                        }
                     }
                 }
             }
@@ -174,7 +186,30 @@ class ViewController: UIViewController, UICollisionBehaviorDelegate {
         allObjects.append(brick)
         view.addSubview(brick)
     }
+  /*
+    func reset () {
+        viewWillDisappear(false)
+        view.addSubview(ball)
+        viewWillAppear(false)
+        
+        //let newGame : ViewController?
+        //self.viewDidLoad()
     
+    }
+*/
+    
+    func gameEnd () {
+        let actionSheet = UIAlertController(title: "The game has ended.", message: "", preferredStyle: .ActionSheet)
+        let winAction = UIAlertAction(title: "Reset", style: .Default) { (action) -> Void in
+            self.reset()
+        }
+        let quitAction = UIAlertAction(title: "Quit", style: .Destructive) { (action) -> Void in
+            exit(0)
+        }
+        actionSheet.addAction(winAction)
+        actionSheet.addAction(quitAction)
+        self.presentViewController(actionSheet, animated: true, completion: nil)
+    }
     
     
 }
