@@ -32,7 +32,11 @@ class ViewController: UIViewController, UICollisionBehaviorDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        addObjects()
         
+            
+        }
+    func addObjects () {
         
         //adds ball
         ball = UIView(frame: CGRectMake(view.center.x - 10, view.center.y, 20, 20))
@@ -47,6 +51,7 @@ class ViewController: UIViewController, UICollisionBehaviorDelegate {
         view.addSubview(paddle)
         
         dynamicAnimator = UIDynamicAnimator(referenceView: view)
+        
         
         allObjects.append(paddle)
         allObjects.append(ball)
@@ -63,8 +68,7 @@ class ViewController: UIViewController, UICollisionBehaviorDelegate {
             addBrick(((40*x)+(x*xOffset)), y: 95, color: UIColor.orangeColor())
             addBrick(((40*x)+(x*xOffset)), y: 120, color: UIColor.greenColor())
             addBrick(((40*x)+(x*xOffset)), y: 145, color: UIColor.greenColor())
-            
-        }
+    }
         
         
         print("test2")
@@ -186,20 +190,23 @@ class ViewController: UIViewController, UICollisionBehaviorDelegate {
         allObjects.append(brick)
         view.addSubview(brick)
     }
-  /*
+  
     func reset () {
-        viewWillDisappear(false)
-        view.addSubview(ball)
-        viewWillAppear(false)
+        self.dismissViewControllerAnimated(false, completion: {});
+        self.presentViewController(self, animated: false, completion: nil)
         
-        //let newGame : ViewController?
-        //self.viewDidLoad()
-    
+        /*
+        for index in view.subviews {
+            view.removeFromSuperview()
+        }
+        addObjects()
+        lives = 5
+        */
     }
-*/
+
     
     func gameEnd () {
-        let actionSheet = UIAlertController(title: "The game has ended.", message: "", preferredStyle: .ActionSheet)
+        let actionSheet = UIAlertController(title: "\(gameState)", message: "", preferredStyle: .ActionSheet)
         let winAction = UIAlertAction(title: "Reset", style: .Default) { (action) -> Void in
             self.reset()
         }
