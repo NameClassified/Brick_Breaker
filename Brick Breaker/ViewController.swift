@@ -34,8 +34,8 @@ class ViewController: UIViewController, UICollisionBehaviorDelegate {
         super.viewDidLoad()
         addObjects()
         
-            
-        }
+        
+    }
     func addObjects () {
         
         //adds ball
@@ -58,17 +58,19 @@ class ViewController: UIViewController, UICollisionBehaviorDelegate {
         
         print("test1")
         
+        
+        //adds rows of bricks
         let width = Int(view.bounds.width)
         let numberofBricks = (width / 40)
         let xOffset = Int(Int(width % 40)/2)
         for var x = 0; x <= numberofBricks; x++  {
-            addBrick(((40*x)+(x*xOffset)), y: 20, color: UIColor.blueColor())
-            addBrick(((40*x)+(x*xOffset)), y: 45, color: UIColor.orangeColor())
-            addBrick(((40*x)+(x*xOffset)), y: 70, color: UIColor.orangeColor())
-            addBrick(((40*x)+(x*xOffset)), y: 95, color: UIColor.orangeColor())
-            addBrick(((40*x)+(x*xOffset)), y: 120, color: UIColor.greenColor())
-            addBrick(((40*x)+(x*xOffset)), y: 145, color: UIColor.greenColor())
-    }
+            addBrick(((40*x)+(x*xOffset)), y: 20, color: UIColor.blueColor(), tag: 0)
+            addBrick(((40*x)+(x*xOffset)), y: 45, color: UIColor.orangeColor(), tag: 1)
+            addBrick(((40*x)+(x*xOffset)), y: 70, color: UIColor.orangeColor(), tag: 1)
+            addBrick(((40*x)+(x*xOffset)), y: 95, color: UIColor.orangeColor(), tag: 1)
+            addBrick(((40*x)+(x*xOffset)), y: 120, color: UIColor.greenColor(), tag: 2)
+            addBrick(((40*x)+(x*xOffset)), y: 145, color: UIColor.greenColor(), tag: 2)
+        }
         
         
         print("test2")
@@ -140,8 +142,10 @@ class ViewController: UIViewController, UICollisionBehaviorDelegate {
                 dynamicAnimator.updateItemUsingCurrentState(ball)
             }
             else {
-                livesLabel.text = "Game over, pls uninstall"
+                gameState = "Game over."
                 ball.removeFromSuperview()
+                gameEnd()
+                
             }
         }
         
@@ -183,41 +187,58 @@ class ViewController: UIViewController, UICollisionBehaviorDelegate {
         
     }
     
-    func addBrick(x: Int, y: Int, color: UIColor) {
+    func addBrick(x: Int, y: Int, color: UIColor, tag: Int) {
         brick = UIView(frame: CGRectMake(CGFloat(x), CGFloat(y), 40, 20))
         brick.backgroundColor = color
+        brick.tag = tag
         bricks.append(brick)
         allObjects.append(brick)
         view.addSubview(brick)
     }
-  
+    
     func reset () {
-        self.dismissViewControllerAnimated(false, completion: {});
-        self.presentViewController(self, animated: false, completion: nil)
+        brickCount = 48
+        ball.center = view.center
+        let pushBehavior = UIPushBehavior(items: [ball], mode: UIPushBehaviorMode.Instantaneous)
+        pushBehavior.pushDirection = CGVectorMake(0.2, 1.0)
+        pushBehavior.magnitude = 0.25
+        for brick in bricks {
+            brick.hidden = false
+            if brick.tag == 0 {
+                brick.backgroundColor = UIColor.blueColor()
+            }
+            
+            else if brick.tag == 1 {
+                brick.backgroundColor = UIColor.orangeColor()
+            }
+            else if brick.tag == 2 {
+                brick.backgroundColor = UIColor.greenColor()
+            }
+        }
+        for index in allObjects {
+            collisionBehavior.addItem(index)
+            view.addSubview(index)
+        }
         
-        /*
-        for index in view.subviews {
-            view.removeFromSuperview()
+            lives = 5
+        
+            
         }
-        addObjects()
-        lives = 5
-        */
-    }
-
-    
-    func gameEnd () {
-        let actionSheet = UIAlertController(title: "\(gameState)", message: "", preferredStyle: .ActionSheet)
-        let winAction = UIAlertAction(title: "Reset", style: .Default) { (action) -> Void in
-            self.reset()
+        
+        //action sheet for end game
+        func gameEnd () {
+            let actionSheet = UIAlertController(title: "\(gameState)", message: "", preferredStyle: .ActionSheet)
+            let winAction = UIAlertAction(title: "Reset", style: .Default) { (action) -> Void in
+                self.reset()
+            }
+            let quitAction = UIAlertAction(title: "Quit", style: .Destructive) { (action) -> Void in
+                exit(0)
+            }
+            actionSheet.addAction(winAction)
+            actionSheet.addAction(quitAction)
+            self.presentViewController(actionSheet, animated: true, completion: nil)
         }
-        let quitAction = UIAlertAction(title: "Quit", style: .Destructive) { (action) -> Void in
-            exit(0)
-        }
-        actionSheet.addAction(winAction)
-        actionSheet.addAction(quitAction)
-        self.presentViewController(actionSheet, animated: true, completion: nil)
-    }
-    
-    
+        
+        
 }
 
